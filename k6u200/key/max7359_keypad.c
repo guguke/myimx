@@ -19,6 +19,7 @@
 #include <linux/interrupt.h>
 #include <linux/pm.h>
 #include <linux/input.h>
+#include <linux/gpio.h>
 #include <linux/input/matrix_keypad.h>
 
 #define MAX7359_MAX_KEY_ROWS	8
@@ -64,6 +65,21 @@ struct max7359_keypad {
 	struct i2c_client *client;
 };
 
+static uint32_t my7359_keymap[]={
+	KEY(0,0,KEY_1), KEY(0,1,KEY_9), KEY(0,2,KEY_G), KEY(0,3,KEY_P), KEY(0,4,KEY_X), KEY(0,5,KEY_F6), KEY(0,5,KEY_F14), KEY(0,7,KEY_ENTER),
+	KEY(1,0,KEY_2), KEY(1,1,KEY_0), KEY(1,2,KEY_H), KEY(1,3,KEY_Q), KEY(1,4,KEY_Y), KEY(1,5,KEY_F7), KEY(1,5,KEY_F15), KEY(1,7,KEY_ENTER),
+	KEY(2,0,KEY_3), KEY(2,1,KEY_A), KEY(2,2,KEY_I), KEY(2,3,KEY_R), KEY(2,4,KEY_Z), KEY(2,5,KEY_F8), KEY(2,5,KEY_F16), KEY(2,7,KEY_ENTER),
+	KEY(3,0,KEY_4), KEY(3,1,KEY_B), KEY(3,2,KEY_J), KEY(3,3,KEY_S), KEY(3,4,KEY_F1), KEY(3,5,KEY_F9), KEY(3,5,KEY_ENTER), KEY(3,7,KEY_ENTER),
+	KEY(4,0,KEY_5), KEY(4,1,KEY_C), KEY(4,2,KEY_K), KEY(4,3,KEY_T), KEY(4,4,KEY_F2), KEY(4,5,KEY_F10), KEY(4,5,KEY_ENTER), KEY(4,7,KEY_ENTER),
+	KEY(5,0,KEY_6), KEY(5,1,KEY_D), KEY(5,2,KEY_M), KEY(5,3,KEY_U), KEY(5,4,KEY_F3), KEY(5,5,KEY_F11), KEY(5,5,KEY_ENTER), KEY(5,7,KEY_ENTER),
+	KEY(6,0,KEY_7), KEY(6,1,KEY_E), KEY(6,2,KEY_N), KEY(6,3,KEY_V), KEY(6,4,KEY_F4), KEY(6,5,KEY_F12), KEY(6,5,KEY_ENTER), KEY(6,7,KEY_ENTER),
+	KEY(7,0,KEY_8), KEY(7,1,KEY_F), KEY(7,2,KEY_O), KEY(7,3,KEY_W), KEY(7,4,KEY_F5), KEY(7,5,KEY_F13), KEY(7,5,KEY_ENTER), KEY(7,7,KEY_ENTER)
+};
+static struct matrix_keymap_data my7359_data ={
+	.keymap=my7359_keymap,
+	.keymap_size=64,
+};
+
 static int max7359_write_reg(struct i2c_client *client, u8 reg, u8 val)
 {
 	int ret = i2c_smbus_write_byte_data(client, reg, val);
@@ -85,10 +101,11 @@ static int max7359_read_reg(struct i2c_client *client, int reg)
 }
 
 static void max7359_build_keycode(struct max7359_keypad *keypad,
-				const struct matrix_keymap_data *keymap_data)
+				const struct matrix_keymap_data *keymap_data1)
 {
 	struct input_dev *input_dev = keypad->input_dev;
 	int i;
+	struct matrix_keymap_data *keymap_data=&my7359_data;
 
 	for (i = 0; i < keymap_data->keymap_size; i++) {
 		unsigned int key = keymap_data->keymap[i];
@@ -166,7 +183,6 @@ static void max7359_close(struct input_dev *dev)
 static void max7359_initialize(struct i2c_client *client)
 {
 	max7359_write_reg(client, MAX7359_REG_CONFIG,
-		MAX7359_CFG_INTERRUPT | /* Irq clears after host read */
 		MAX7359_CFG_KEY_RELEASE | /* Key release enable */
 		MAX7359_CFG_WAKEUP); /* Key press wakeup enable */
 
@@ -189,6 +205,7 @@ static int max7359_probe(struct i2c_client *client,
 	int ret;
 	int error;
 
+	printk(KERN_ERR"%s       max7359.irq: %d\n",__FUNCTION__,client->irq);
 	if (!client->irq) {
 		dev_err(&client->dev, "The irq number should not be zero\n");
 		return -EINVAL;
@@ -229,7 +246,7 @@ static int max7359_probe(struct i2c_client *client,
 	input_set_drvdata(input_dev, keypad);
 
 	max7359_build_keycode(keypad, keymap_data);
-
+#if 1
 	error = request_threaded_irq(client->irq, NULL, max7359_interrupt,
 				     IRQF_TRIGGER_LOW | IRQF_ONESHOT,
 				     client->name, keypad);
@@ -237,7 +254,7 @@ static int max7359_probe(struct i2c_client *client,
 		dev_err(&client->dev, "failed to register interrupt\n");
 		goto failed_free_mem;
 	}
-
+#endif
 	/* Register the input device */
 	error = input_register_device(input_dev);
 	if (error) {
