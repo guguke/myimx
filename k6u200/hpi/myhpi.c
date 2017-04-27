@@ -7,15 +7,24 @@
 #include <linux/kernel.h> /* We're doing kernel work */
 #include <linux/proc_fs.h>        /* Necessary because we use the proc fs */
 #include <asm/uaccess.h>  /* for copy_from_user */
+#include <linux/uidgid.h>
 
 #define PROCFS_MAX_SIZE        1024
-#define PROCFS_NAME            "buffer1k"
+#define PROCFS_NAME            "myhpi"
 
+//module_init(init_module);
+//module_exit(cleanup_module);
+
+static ssize_t procfile_read(struct file *,char *,size_t, loff_t*);
 /**
 * This structure hold information about the /proc file
 *
 */
 static struct proc_dir_entry *Our_Proc_File;
+static struct file_operations hpi_file_ops={
+	.owner = THIS_MODULE,
+	.read = procfile_read,
+};
 
 /**
 * The buffer used to store character for this module
@@ -33,22 +42,23 @@ static unsigned long procfs_buffer_size = 0;
 * This function is called then the /proc file is read
 *
 */
-int
-procfile_read(char *buffer,
-              char **buffer_location,
-              off_t offset, int buffer_length, int *eof, void *data)
+static ssize_t
+procfile_read(struct file *file, char *buffer, size_t length, loff_t *offset)
 {
         int ret;
+	static int finished=0;
 
         printk(KERN_INFO "procfile_read (/proc/%s) called\n", PROCFS_NAME);
 
-        if (offset > 0) {
+        if (finished > 0) {
                 /* we have finished to read, return 0 */
                 ret  = 0;
+		finished = 0;
         } else {
+		finished = 1;
+		ret = sprintf(buffer,"hello,world!\n");
                 /* fill the buffer, return the buffer size */
-                memcpy(buffer, procfs_buffer, procfs_buffer_size);
-                ret = procfs_buffer_size;
+                //ret = length;
         }
 
         return ret;
@@ -79,25 +89,19 @@ int procfile_write(struct file *file, const char *buffer, unsigned long count,
 *This function is called when the module is loaded
 *
 */
-int init_module()
+int __init init_module()
 {
         /* create the /proc file */
-        Our_Proc_File = create_proc_entry(PROCFS_NAME, 0644, NULL);
+        Our_Proc_File = proc_create(PROCFS_NAME, S_IFREG | S_IRUGO, NULL, &hpi_file_ops);
 
         if (Our_Proc_File == NULL) {
-                remove_proc_entry(PROCFS_NAME, &proc_root);
+                remove_proc_entry(PROCFS_NAME, NULL);
                 printk(KERN_ALERT "Error: Could not initialize /proc/%s\n",
                         PROCFS_NAME);
                 return -ENOMEM;
         }
-
-        Our_Proc_File->read_proc  = procfile_read;
-        Our_Proc_File->write_proc = procfile_write;
-        Our_Proc_File->owner          = THIS_MODULE;
-        Our_Proc_File->mode    = S_IFREG | S_IRUGO;
-        Our_Proc_File->uid    = 0;
-        Our_Proc_File->gid    = 0;
-        Our_Proc_File->size    = 37;
+	proc_set_user(Our_Proc_File,KUIDT_INIT(0),KGIDT_INIT(0));
+	proc_set_size(Our_Proc_File,37);
 
         printk(KERN_INFO "/proc/%s created\n", PROCFS_NAME);
         return 0;      /* everything is ok */
@@ -107,11 +111,11 @@ int init_module()
 *This function is called when the module is unloaded
 *
 */
-void cleanup_module()
+void __exit cleanup_module()
 {
-        remove_proc_entry(PROCFS_NAME, &proc_root);
+        remove_proc_entry(PROCFS_NAME, NULL);
         printk(KERN_INFO "/proc/%s removed\n", PROCFS_NAME);
 }
-
+MODULE_LICENSE("GPL");
 
 
