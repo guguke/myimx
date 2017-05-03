@@ -129,8 +129,8 @@ int main(int argc, char **argv) {
     //pDot->offsetx =((i>>3)&0x3)<<4;
     pDot->offsety = (i%10)*12;
     pDot->offsetx =((i%50)/10)*13;
-    pDot->w = 16;
-    pDot->h = 16;
+    pDot->w = 12;
+    pDot->h = 12;
        for(j=0;j<32; j++) pDot->dot[j]=p[j];
        //n = sendto(sockfd, buf, strlen(buf), 0, &serveraddr, serverlen);
        n = sendto(sockfd, &oled, sizeof(struct udp_oled), 0, &serveraddr, serverlen);

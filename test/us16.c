@@ -121,14 +121,14 @@ int main(int argc, char **argv) {
        oled.t8 = 2;
        n = sendto(sockfd, &oled, sizeof(struct udp_oled), 0, &serveraddr, serverlen);
     //p = gp16+(15*94*32);
-    p = gp12+(15*94*24);
+    p = gp16+(15*94*32);
        oled.t8 = 3;
-    for(i=0;i<50;i++,p+=24){
-	usleep(1000);
+    for(i=0;i<32;i++,p+=32){
+	usleep(2000);
     //pDot->offsety = (i&0x7)<<4;
     //pDot->offsetx =((i>>3)&0x3)<<4;
-    pDot->offsety = (i%10)*12;
-    pDot->offsetx =((i%50)/10)*13;
+    pDot->offsety = (i%8)*16;
+    pDot->offsetx =((i%32)/8)*16;
     pDot->w = 16;
     pDot->h = 16;
        for(j=0;j<32; j++) pDot->dot[j]=p[j];
