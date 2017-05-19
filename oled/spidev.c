@@ -682,13 +682,15 @@ int screen_show(int fd, unsigned char *date, unsigned char x, unsigned char y, u
 	}
 	return 0;
 }
-unsigned char* getpdot(int sn)
+unsigned char* getpdot(int sn,int* ph)
 {
 	unsigned char *p=NULL;
 	int i;
+	*ph = -1;
 	for(i=0;i<gp_mydot->num;i++){
 		if(sn==gp_mydot->idx[i]){
 			p=gp_mydot->dot + gp_mydot->offset[i];
+			*ph = gp_mydot->wh[i];
 			break;
 		}
 	}
@@ -703,6 +705,7 @@ int rec_loop(int fd)
 	int sock, address_len;
 	unsigned char i;
 	unsigned char x, y, t, h, len, len_x, len_y;
+    int wh;
 
     struct Rec_Date
     {
@@ -811,8 +814,8 @@ int rec_loop(int fd)
 	    		h = *int_p;
 	    		int_p ++;
 
-	    		p1=getpdot(*int_p);
-	    		draw_point(fd, p1, x, y, len_x, len_y, h);
+	    		p1=getpdot(*int_p,&wh);
+			if(wh>0) draw_point(fd, p1, x, y, len_x, len_y, wh);
         	}
 	}
 
@@ -933,15 +936,21 @@ int main(int argc, char *argv[])
 	int fd;
 	int i;
 	FILE *fp;
+	char fn[100];
+
+	if(argc>1){
+		sprintf(fn,"%s",argv[1]);//		strcpy(argv[1],fn);
+	}
+	else sprintf(fn,"mydot.bin");
 
 	gp_mydot = malloc(sizeof(struct st_mydot));
 	memset(gp_mydot,0,sizeof(struct st_mydot));
-	fp=fopen("mydot.bin","rb");
+	fp=fopen(fn,"rb");
 	if(fp!=NULL){
 		fread(gp_mydot,sizeof(struct st_mydot),1,fp);
 		fclose(fp);
 	}
-	else printf(" file mydot.bin not found\n");
+	else printf(" file %s  not found\n",fn);
 
 	fd = spi_init(); //init spi
 
