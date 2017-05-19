@@ -815,7 +815,7 @@ int rec_loop(int fd)
 	    		int_p ++;
 
 	    		p1=getpdot(*int_p,&wh);
-			if(wh>0) draw_point(fd, p1, x, y, len_x, len_y, wh);
+			if(wh>0) draw_point(fd, p1, x, y, wh, wh, h);
         	}
 	}
 
