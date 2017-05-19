@@ -19,6 +19,8 @@
 #include "ziku.h"
 #include "gbk2unicode.h"
 
+#include "mydot.h"
+
 #include FT_FREETYPE_H
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -31,6 +33,8 @@
 #define port 45454
 
 #define DEBUG
+
+struct st_mydot *gp_mydot;
 
 unsigned char screen[64][128];
 
@@ -678,6 +682,19 @@ int screen_show(int fd, unsigned char *date, unsigned char x, unsigned char y, u
 	}
 	return 0;
 }
+unsigned char* getpdot(int sn)
+{
+	unsigned char *p=NULL;
+	int i;
+	for(i=0;i<gp_mydot->num;i++){
+		if(sn==gp_mydot->idx[i]){
+			p=gp_mydot->dot + gp_mydot->offset[i];
+			break;
+		}
+	}
+
+	return p;
+}
 /*
 	阻塞等待udp数据包
 */
@@ -770,7 +787,34 @@ int rec_loop(int fd)
         }
 
         //特殊文本
+        if (rec_date.t2 == 0x01)
+        {
+        	unsigned char *p = rec_date.buf;
+        	unsigned char *p1;
+        	unsigned int *int_p = (unsigned int *)p;
 
+        	len = rec_date.lenl + rec_date.lenh*255;
+
+        	if (len != 0)
+        	{
+	        	//x = ((*int_p)&0xff000000) >> 24;
+	        	x = *int_p;
+	    		int_p ++;
+
+	    		y = *int_p;
+	    		int_p ++;
+
+	        	len_x = *int_p;
+	    		len_y = *int_p;
+	    		int_p ++;
+
+	    		h = *int_p;
+	    		int_p ++;
+
+	    		p1=getpdot(*int_p);
+	    		draw_point(fd, p1, x, y, len_x, len_y, h);
+        	}
+	}
 
         //清空屏幕
         if (rec_date.t2 == 0x02)
@@ -888,6 +932,16 @@ int main(int argc, char *argv[])
 {
 	int fd;
 	int i;
+	FILE *fp;
+
+	gp_mydot = malloc(sizeof(struct st_mydot));
+	memset(gp_mydot,0,sizeof(struct st_mydot));
+	fp=fopen("mydot.bin","rb");
+	if(fp!=NULL){
+		fread(gp_mydot,sizeof(struct st_mydot),1,fp);
+		fclose(fp);
+	}
+	else printf(" file mydot.bin not found\n");
 
 	fd = spi_init(); //init spi
 
@@ -916,6 +970,8 @@ int main(int argc, char *argv[])
 	#endif
 
 	close(fd);
+
+	free(gp_mydot);
 
 	return 0;
 }
