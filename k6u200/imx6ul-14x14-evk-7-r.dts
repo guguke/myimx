@@ -411,6 +411,14 @@
 	pinctrl-0 = <&pinctrl_i2c1>;
 	status = "okay";
 
+	max11801@48 {
+		compatible = "maxim,max11801";
+		reg = <0x48>;
+		interrupt-parent = <&gpio5>;
+		interrupts = <0 2>;
+		work-mode = <1>;/*DCM mode*/
+	};
+
 	mag3110@0e {
 			compatible = "fsl,mag3110";
 			status = "disabled";
