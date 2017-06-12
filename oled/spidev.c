@@ -37,6 +37,8 @@
 struct st_mydot *gp_mydot;
 
 unsigned char screen[64][128];
+unsigned char screenX[64][128];
+unsigned char frame[8*128];
 
 unsigned char teststring[]={0xb1, 0xa6, 0x61, 0x00, 0x61, 0x00, 0x61, 0x00, 0};
 unsigned char testdata[]={0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80};
@@ -87,6 +89,30 @@ static void write_data(int fd, uint8_t data)
 		.tx_buf = (unsigned long)tx,  
 		.rx_buf = (unsigned long)rx,  
 		.len = ARRAY_SIZE(tx),  
+		.delay_usecs = delay,  
+		.speed_hz = speed,  
+		.bits_per_word = bits,  
+	};
+
+	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);  
+	if (ret < 1)  
+		pabort("can't send spi message");  
+}
+
+static void write_dataN(int fd, char *p, int len)
+{
+	int ret;  
+	int i;
+	uint8_t tx[256];
+	for(i=0;i<len;i++){
+		tx[i+i]=*p++;
+		tx[i+i+1] = 0x0ff;
+	}
+	uint8_t rx[256];
+	struct spi_ioc_transfer tr = {  
+		.tx_buf = (unsigned long)tx,  
+		.rx_buf = (unsigned long)rx,  
+		.len = len+len,  
 		.delay_usecs = delay,  
 		.speed_hz = speed,  
 		.bits_per_word = bits,  
@@ -278,7 +304,7 @@ void lcd_init(int fd)
 	write_command(fd, 0xd3);
 	write_command(fd, 0x00);
 
-	write_command(fd, 0x40);
+	write_command(fd, 0x40);//       test , start line
 
 	write_command(fd, 0xad);
 	write_command(fd, 0x8b);
@@ -336,7 +362,8 @@ unsigned short g2u(unsigned char *data)
 	xe:结束的横坐标
 	ye:结束的纵坐标
 */
-int flash(int fd, unsigned char xb, unsigned char yb, unsigned char xe, unsigned char ye)
+//   flashN == flash old    , flashX transform , 
+int flashN(int fd, unsigned char xb, unsigned char yb, unsigned char xe, unsigned char ye)
 {
 	unsigned char pb = xb / 8;
 	unsigned char cb = yb;
@@ -377,6 +404,71 @@ int flash(int fd, unsigned char xb, unsigned char yb, unsigned char xe, unsigned
 			write_data(fd, temp);
 		}
 	}
+}
+//   flashN == flash old    , flashX transform , 
+int flashX(int fd, unsigned char xb, unsigned char yb, unsigned char xe, unsigned char ye)
+{
+	unsigned char pb = xb / 8;
+	unsigned char cb = yb;
+	unsigned char pe = xe / 8;
+	unsigned char ce = ye;
+	unsigned char i,j,k;
+	unsigned char temp;
+	int n=0;
+	char *p;
+
+	//检测坐标是否合法
+	if (pe >= 8)
+	{
+		pe = 7;
+	}
+	if (ce >= 128)
+	{
+		ce = 127;
+	}
+	if (pb >= 8 | cb >= 128)
+	{
+		printf("out of screen\n");
+		return 1;
+	}
+	//点转为字节
+	for (i=pb; i<=pe; i++)
+	{
+		//set_start_page(fd, i);
+		//set_start_column(fd, cb);
+		for (j=cb; j<=ce; j++)
+		{
+			temp = 0x00;
+			for (k=0; k<8; k++)
+			{
+				if (screenX[i*8+k][j])
+				{
+					temp |= (0x01 << k);
+				}
+			}
+			frame[n++] = temp;
+			//write_data(fd, temp);
+		}
+	}
+	p = frame;
+	for(i=0;i<8;i++){
+		set_start_page(fd, i);
+		set_start_column(fd, 0);
+		write_dataN(fd, p,128);
+		p += 128;
+	}
+}
+void xScreen()
+{
+	int i,j;
+	for(i=0;i<64;i++)
+		for(j=0;j<128;j++)
+			screenX[i][j] = screen[63-i][127-j];
+}
+int flash(int fd, unsigned char xb, unsigned char yb, unsigned char xe, unsigned char ye)
+{
+	xScreen();
+	flashX(fd,0,0,64,128);
 }
 /*
 	缓冲区帅刷屏
