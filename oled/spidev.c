@@ -574,6 +574,27 @@ unsigned char hanzi(int fd, unsigned char *gbk_code, unsigned char x, unsigned c
 	h:1高亮 0正常
 */
 
+int draw_point33(int fd, unsigned char *data, unsigned char x, unsigned char y, unsigned char len_x, unsigned char len_y, unsigned char h)
+{
+	unsigned char i,j,k;
+	unsigned char *data_p = data;
+	unsigned char temp;
+
+	for (i=0; i<len_x; ++i)
+	{
+		for (j=0; j<(((len_y-1)/8)+1); ++j)
+		{
+			temp = *data_p;
+			for (k=0; k<8; ++k)
+			{
+				if(j*8+k >= len_y) break;
+				screen[i+x][j*8+k+y] ^= 1;
+			}
+		data_p ++;
+		}
+	}
+	flash(fd, x, y, x+len_x, y+len_y);
+}
 int draw_point(int fd, unsigned char *data, unsigned char x, unsigned char y, unsigned char len_x, unsigned char len_y, unsigned char h)
 {
 	unsigned char i,j,k;
@@ -814,8 +835,11 @@ int rec_loop(int fd)
 	    		h = *int_p;
 	    		int_p ++;
 
+			if(*int_p==33) draw_point33(fd, p1, x, y, 1, len_y, h);
+			else{
 	    		p1=getpdot(*int_p,&wh);
 			if(wh>0) draw_point(fd, p1, x, y, wh, wh, h);
+			}
         	}
 	}
 
