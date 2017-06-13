@@ -49,7 +49,8 @@ static void pabort(const char *s)
 	abort();
 }
 
-static const char *device = "/dev/spidev3.0";
+static const char *device0 = "/dev/spidev0.0";
+static const char *device3 = "/dev/spidev3.0";
 static uint8_t mode;
 static uint8_t bits = 9;
 static uint32_t speed = 8000000;
@@ -243,9 +244,16 @@ int spi_init()
 	int ret = 0;
 	int fd;
 
-	fd = open(device, O_RDWR);
-	if (fd < 0)
-		pabort("can't open device");
+	fd = open(device0, O_RDWR);
+	if (fd < 0){
+		fd = open(device3, O_RDWR);
+		if(fd < 0){
+			printf(" can't open dev.spidev0.0 or spidev3.0\n");
+			return -1;
+		}
+		else printf(" open spidev : %s \n",device3);
+	}
+	else printf(" open spidev : %s\n",device0);
 
 	/*
 	* spi mode
