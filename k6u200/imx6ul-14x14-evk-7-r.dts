@@ -36,24 +36,57 @@
 		reg = <0x80000000 0x20000000>;
 	};
 
-#if 0
 	leds {
 	compatible = "gpio-leds";
 	pinctrl-names = "default";
-		status = "disable";
+		status = "okay";
 
 	led1{
 		label = "led1";
-		gpios = <&gpio5 9 GPIO_ACTIVE_LOW>;
-		default-state = "off";
+		gpios = <&gpio1 20 GPIO_ACTIVE_LOW>;
+		default-state = "on";
 	};
 	led2{
 		label = "led2";
-		gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
-		default-state = "off";
+		gpios = <&gpio1 21 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
+	led3{
+		label = "led3";
+		gpios = <&gpio1 23 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
+	led4{
+		label = "led4";
+		gpios = <&gpio1 22 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
+	led5{
+		label = "led5";
+		gpios = <&gpio1 24 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
+	led6{
+		label = "led6";
+		gpios = <&gpio1 25 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
+	led7{
+		label = "ledm";
+		gpios = <&gpio1 27 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
+	led8{
+		label = "ledwifi";
+		gpios = <&gpio1 26 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
+	led9{
+		label = "ledkey";
+		gpios = <&gpio4 20 GPIO_ACTIVE_LOW>;
+		default-state = "on";
 	};
 	};
-#endif
 
 	backlight {
 		compatible = "pwm-backlight";
@@ -182,7 +215,7 @@
 	cs-gpios = <0>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi1>;
-	status = "okay";
+	status = "disable";
 
 	spidev@0x00 {
 		compatible = "spidev";
@@ -195,7 +228,7 @@
 	cs-gpios = <0>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi4>;
-	status = "disable";
+	status = "okay";
 
 	spidev@0x00 {
 		compatible = "spidev";
@@ -262,14 +295,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_flexcan1>;
 	xceiver-supply = <&reg_can_3v3>;
-	status = "okay";
+	status = "disable";
 };
 
 &flexcan2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_flexcan2>;
 	xceiver-supply = <&reg_can_3v3>;
-	status = "okay";
+	status = "disable";
 };
 #endif
 
@@ -371,12 +404,12 @@
 	/* for DTE mode, add below change */
 	/* fsl,dte-mode; */
 	/* pinctrl-0 = <&pinctrl_uart2dte>; */
-	status = "okay";
+	status = "disable";
 };
 &uart3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart3>;
-	status = "okay";
+	status = "disable";
 };
 &usbotg1 {
 	vbus-supply = <&reg_usb_otg1_vbus>;
@@ -614,6 +647,15 @@
       pinctrl_max7359: mx7359grp {
 				fsl,pins = <
 				MX6UL_PAD_GPIO1_IO01__GPIO1_IO01	0x1b0b0
+				MX6UL_PAD_UART2_TX_DATA__GPIO1_IO20	0x1b0b1
+				MX6UL_PAD_UART2_RX_DATA__GPIO1_IO21	0x1b0b1
+				MX6UL_PAD_UART2_RTS_B__GPIO1_IO23	0x1b0b1
+				MX6UL_PAD_UART2_CTS_B__GPIO1_IO22	0x1b0b1
+				MX6UL_PAD_UART3_RX_DATA__GPIO1_IO25	0x1b0b1
+				MX6UL_PAD_UART3_TX_DATA__GPIO1_IO24	0x1b0b1
+				MX6UL_PAD_UART3_RTS_B__GPIO1_IO27	0x1b0b1
+				MX6UL_PAD_UART3_CTS_B__GPIO1_IO26	0x1b0b1
+				MX6UL_PAD_CSI_HSYNC__GPIO4_IO20		0x1b0b1
 					>;
 							};
       pinctrl_edt_ft5x06: edt_ft5x06grp {
