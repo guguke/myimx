@@ -188,6 +188,7 @@ static void max7359_initialize(struct i2c_client *client)
 
 	/* Full key-scan functionality */
 	max7359_write_reg(client, MAX7359_REG_DEBOUNCE, 0x1F);
+	max7359_write_reg(client, MAX7359_REG_KEYREP,0xff);
 
 	/* nINT asserts every debounce cycles */
 	max7359_write_reg(client, MAX7359_REG_INTERRUPT, 0x01);
