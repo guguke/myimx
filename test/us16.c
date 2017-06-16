@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     p = gp16+(15*94*32);
        oled.t8 = 3;
     for(i=0;i<32;i++,p+=32){
-	usleep(2000);
+	usleep(20000);
     //pDot->offsety = (i&0x7)<<4;
     //pDot->offsetx =((i>>3)&0x3)<<4;
     pDot->offsety = (i%8)*16;

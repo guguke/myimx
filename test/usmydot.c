@@ -91,12 +91,6 @@ int main(int argc, char **argv) {
     pSt0 = &(oled.udata.st0);
     pSt1 = &(oled.udata.st1);
 
-    gp12=malloc(300000);
-    gp16=malloc(300000);
-    gp24=malloc(700000);
-    loaddot();
-
-    
 
     oled.p8 = 1;
     oled.t8 = 3;
@@ -117,7 +111,7 @@ int main(int argc, char **argv) {
     hostname = argv[1];
     portno = atoi(argv[2]);
     if(argc>3)fontsize=atoi(argv[3]);
-    else fontsize=16;
+    else fontsize=8;
 
     /* socket: create the socket */
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -137,47 +131,27 @@ int main(int argc, char **argv) {
     bcopy((char *)server->h_addr, 
 	  (char *)&serveraddr.sin_addr.s_addr, server->h_length);
     serveraddr.sin_port = htons(portno);
-#if 0
-    /* get a message from the user */
-    bzero(buf, BUFSIZE);
-    printf("Please enter msg: ");
-    fgets(buf, BUFSIZE, stdin);
-#endif
     /* send the message to the server */
     serverlen = sizeof(serveraddr);
+
+       // clear screen
        oled.t8 = 2;
        oled.len16=0;
        n = sendto(sockfd, &oled, sizeof(struct udp_oled), 0, &serveraddr, serverlen);
-    //p = gp16+(15*94*32);
-    p = gp16+(15*94*32);
        oled.t8 = 1;
     num = (128/fontsize)*(64/fontsize);
-    for(i=0;i<num;i++,p+=32){
+    for(i=0;i<num;i++){
 	usleep(4000);
-    //pDot->offsety = (i&0x7)<<4;
-    //pDot->offsetx =((i>>3)&0x3)<<4;
     pSt0->offsety = (i%(128/fontsize))*fontsize;
     pSt0->offsetx =(i/(128/fontsize))*fontsize;
     pSt0->fontsize = 8;
     pSt0->style = 0;
-       //for(j=0;j<32; j++) pDot->dot[j]=p[j];
-	pSt1->sn=0;
+	pSt1->sn=i;
 	oled.len16=10;
-       //n = sendto(sockfd, buf, strlen(buf), 0, &serveraddr, serverlen);
        n = sendto(sockfd, &oled, sizeof(struct udp_oled), 0, &serveraddr, serverlen);
        if (n < 0) 
           error("ERROR in sendto");
     }
-#if 0 
-    /* print the server's reply */
-    n = recvfrom(sockfd, buf, strlen(buf), 0, &serveraddr, &serverlen);
-    if (n < 0) 
-      error("ERROR in recvfrom");
-    printf("Echo from server: %s", buf);
-#endif
-    free(gp12);
-    free(gp16);
-    free(gp24);
 
     return 0;
 }

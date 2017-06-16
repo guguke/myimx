@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
     struct oled_dot *pDot;
     int i,j,k;
     char *p;
+    int nline=0;
 
     gp12=malloc(300000);
     gp16=malloc(300000);
@@ -85,12 +86,15 @@ int main(int argc, char **argv) {
     for(i=0;i<1024;i++) pDot->dot[i]=0xff;
 
     /* check command line arguments */
-    if (argc != 3) {
+    if (argc < 3) {
        fprintf(stderr,"usage: %s <hostname> <port>\n", argv[0]);
        exit(0);
     }
     hostname = argv[1];
     portno = atoi(argv[2]);
+    if(argc>3)nline=atoi(argv[3]);
+    if(nline>63)nline=63;
+    if(nline<0)nline=0;
 
     /* socket: create the socket */
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -134,10 +138,10 @@ int main(int argc, char **argv) {
     //pDot->offsety = (i&0x7)<<4;
     //pDot->offsetx =((i>>3)&0x3)<<4;
     pDot->offsety = 0;
-    pDot->offsetx =i%64;
-    pDot->w = 2;
+    pDot->offsetx =nline;
+    pDot->w = 1;
     pDot->h = 128;
-       for(j=0;j<32; j++) pDot->dot[j]=0x55;
+       for(j=0;j<32; j++) pDot->dot[j]=0xff;
        //n = sendto(sockfd, buf, strlen(buf), 0, &serveraddr, serverlen);
        n = sendto(sockfd, &oled, sizeof(struct udp_oled), 0, &serveraddr, serverlen);
        if (n < 0) 
