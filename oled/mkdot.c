@@ -101,7 +101,7 @@ void initDot()
 			break;
 		}
 		n=sscanf(line,"%s%d%d",buf,&sn1,&wh1);
-		if(3==n){
+		if(n>=3){
 			add1(sn,wh,p);
 			sn=sn1;
 			wh=wh1;
