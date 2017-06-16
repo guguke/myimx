@@ -86,6 +86,16 @@
 		gpios = <&gpio4 20 GPIO_ACTIVE_LOW>;
 		default-state = "on";
 	};
+	led10{
+		label = "dsp_reset";
+		gpios = <&gpio4 21 GPIO_ACTIVE_LOW>;
+		default-state = "off";
+	};
+	led11{
+		label = "wifi_pw";
+		gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+		default-state = "on";
+	};
 	};
 
 	backlight {
@@ -656,6 +666,8 @@
 				MX6UL_PAD_UART3_RTS_B__GPIO1_IO27	0x1b0b1
 				MX6UL_PAD_UART3_CTS_B__GPIO1_IO26	0x1b0b1
 				MX6UL_PAD_CSI_HSYNC__GPIO4_IO20		0x1b0b1
+				MX6UL_PAD_CSI_DATA00__GPIO4_IO21	0x1b0b1
+				MX6UL_PAD_GPIO1_IO03__GPIO1_IO03	0x1b0b1
 					>;
 							};
       pinctrl_edt_ft5x06: edt_ft5x06grp {
