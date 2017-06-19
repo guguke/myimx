@@ -602,7 +602,7 @@ static struct max8903_pdata *max8903_of_populate_pdata(
 	if (of_get_property(of_node, "fsl,usb_valid", NULL))
 		pdata->usb_valid = true;
 	if (of_get_property(of_node, "fsl,adc_disable", NULL))
-		pdata->feature_flag = true;
+		pdata->feature_flag = false;
 
 	if (pdata->dc_valid) {
 		pdata->dok = of_get_named_gpio(of_node, "dok_input", 0);
