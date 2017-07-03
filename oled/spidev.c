@@ -32,7 +32,7 @@
 
 #define port 45454
 
-#define DEBUG
+//#define DEBUG
 
 struct st_mydot *gp_mydot;
 
@@ -425,6 +425,9 @@ int flashX(int fd, unsigned char xb, unsigned char yb, unsigned char xe, unsigne
 	int n=0;
 	char *p;
 
+#ifdef DEBUG
+    	printf(" func flashX  xb:%d yb:%d xe:%d ye:%d", xb,yb,xe,ye);
+#endif
 	//检测坐标是否合法
 	if (pe >= 8)
 	{
@@ -469,6 +472,9 @@ int flashX(int fd, unsigned char xb, unsigned char yb, unsigned char xe, unsigne
 void xScreen()
 {
 	int i,j;
+#ifdef DEBUG
+    	printf(" func xScreen\n");
+#endif
 	for(i=0;i<64;i++)
 		for(j=0;j<128;j++)
 			screenX[i][j] = screen[63-i][127-j];
@@ -681,17 +687,26 @@ int draw_point33(int fd, unsigned char *data, unsigned char x, unsigned char y, 
 	unsigned char *data_p = data;
 	unsigned char temp;
 
+#ifdef DEBUG1
+    	printf(" func draw_point33 x:%d y:%d len_x:%d len_y:%d\n", x,y,len_x,len_y);
+#endif
 	for (i=0; i<len_x; ++i)
 	{
 		for (j=0; j<(((len_y-1)/8)+1); ++j)
 		{
-			temp = *data_p;
+#ifdef DEBUG1
+    	printf(" func draw_point33 i:%d  j:%d  \n", i,j);
+#endif
+			//temp = *data_p;
 			for (k=0; k<8; ++k)
 			{
+#ifdef DEBUG1
+    	printf(" func draw_point33 i:%d  j:%d  k:%d\n", i,j,k);
+#endif
 				if(j*8+k >= len_y) break;
 				screen[i+x][j*8+k+y] ^= 1;
 			}
-		data_p ++;
+		//data_p ++;
 		}
 	}
 	flash(fd, x, y, x+len_x, y+len_y);
